@@ -1,11 +1,5 @@
-package control;
+/*package control;
 
-import solids.Axis.AxisX;
-import solids.Axis.AxisY;
-import solids.Axis.AxisZ;
-import rasterize.LineRasterizerGraphics;
-import rasterize.Raster;
-import renderer.WireRenderer;
 import transforms.*;
 import view.Panel;
 
@@ -299,4 +293,76 @@ public class Controller3D implements Controller {
         displey();
     }
 
+}*/
+
+
+package control;
+
+import rasterizers.Linerasterizer;
+import rasterizers.TriangleRasterizer;
+import shaders.Shader;
+import solids.Arrow;
+import solids.Solid;
+import raster.ImageBuffer;
+import raster.ZBuffer;
+import renderer.Renderer;
+import transforms.Col;
+import view.Panel;
+
+import java.awt.event.*;
+
+public class Controller3D implements Controller {
+    private final Panel panel;
+    private final ZBuffer zBuffer;
+    private final TriangleRasterizer triangleRasterizer;
+    private final Linerasterizer linerasterizer;
+    private final Renderer renderer;
+
+    public Controller3D(Panel panel) {
+        this.panel = panel;
+        this.zBuffer = new ZBuffer(panel.getRaster());
+        this.triangleRasterizer = new TriangleRasterizer(zBuffer);
+        this.linerasterizer = new Linerasterizer(zBuffer);
+
+        Col color = new Col(0xff0000);
+
+        Shader greenShader = v -> {
+            return new Col(0x00ff00);
+        };
+
+        this.renderer = new Renderer(triangleRasterizer,linerasterizer);
+        initObjects(panel.getRaster());
+        initListeners();
+        redraw();
+    }
+
+    public void initObjects(ImageBuffer raster) {
+        raster.setClearValue(new Col(0x101010));
+
+    }
+
+    private void redraw() {
+        panel.clear();
+       /*triangleRasterizer.rasterizer(
+                new Point3D(-1,0,0.3),
+                new Point3D(1,1,0.3),
+                new Point3D(0,-1,0.3)
+        );*/
+        Solid arrow = new Arrow();
+        renderer.render(arrow);
+
+        panel.repaint();
+    }
+
+    @Override
+    public void initListeners() {
+        panel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                panel.resize();
+                initObjects(panel.getRaster());
+            }
+        });
+    }
 }
+

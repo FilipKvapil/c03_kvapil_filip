@@ -1,5 +1,7 @@
 package raster;
 
+import transforms.Col;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 

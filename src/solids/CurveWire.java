@@ -16,7 +16,7 @@ public class CurveWire  extends Solid{
 
         Cubic cubic = new Cubic(Cubic.FERGUSON, points);
 
-        Vertex v = new Vertex(cubic.compute(0));
+       /* Vertex v = new Vertex(cubic.compute(0));
         for (int i = 0; i < 100; i++) {
             double t = 1 / 100.;
             v = new Vertex(cubic.compute(t));
@@ -26,7 +26,7 @@ public class CurveWire  extends Solid{
             getIndexBuffer().add(getVertexBuffer().size() -2);
             getIndexBuffer().add(getVertexBuffer().size() -1);
 
-        }
+        }*/
 
         //TODO: part buffer
     }

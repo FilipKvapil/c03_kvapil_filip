@@ -13,7 +13,7 @@ import java.util.Optional;
  */
 
 public class Vec3D {
-	private final double x, y, z;
+	public final double x, y, z;
 
 	/**
 	 * Creates a zero vector

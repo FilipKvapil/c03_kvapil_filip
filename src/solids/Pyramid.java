@@ -10,8 +10,8 @@ import java.awt.*;
 
 public class Pyramid extends Solid{
     public Pyramid() {
-
-        addIndices(0,1,1,2,2,3,3,0,0,4,1,4,2,4,3,4);
+        //TODO:Dodělat index buffer
+        //addIndices(0,1,1,2,2,3,3,0,0,4,1,4,2,4,3,4);
 
         getVertexBuffer().add(new Vertex(.75, .75,0,new Col(Color.cyan.getRGB()))); //v0
         getVertexBuffer().add(new Vertex(.25,.75,0,new Col(Color.cyan.getRGB()))); //v1

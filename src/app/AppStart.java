@@ -1,7 +1,6 @@
 package app;
 
 import control.Controller3D;
-import model.Cube;
 import view.Window;
 
 import javax.swing.*;

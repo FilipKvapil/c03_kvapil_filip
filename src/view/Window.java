@@ -11,7 +11,7 @@ public class Window extends JFrame {
         setLayout(new BorderLayout());
         setResizable(true);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Filip Kvapil - Uloha 2" + this.getClass().getName());
+        setTitle("Filip Kvapil - Zbuffer" + this.getClass().getName());
 
 
         panel = new Panel();

@@ -1,6 +1,7 @@
 package shaders;
 
 import model.Vertex;
+import transforms.Col;
 
 public class ShaderFullColor implements Shader{
     @Override
