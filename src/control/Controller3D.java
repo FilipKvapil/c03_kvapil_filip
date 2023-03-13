@@ -302,6 +302,9 @@ import rasterizers.Linerasterizer;
 import rasterizers.TriangleRasterizer;
 import shaders.Shader;
 import solids.Arrow;
+import solids.Axis.AxisX;
+import solids.Axis.AxisY;
+import solids.Axis.AxisZ;
 import solids.Solid;
 import raster.ImageBuffer;
 import raster.ZBuffer;
@@ -343,13 +346,14 @@ public class Controller3D implements Controller {
 
     private void redraw() {
         panel.clear();
-       /*triangleRasterizer.rasterizer(
-                new Point3D(-1,0,0.3),
-                new Point3D(1,1,0.3),
-                new Point3D(0,-1,0.3)
-        );*/
-        Solid arrow = new Arrow();
-        renderer.render(arrow);
+        Solid axisX = new AxisX();
+        Solid axisY = new AxisY();
+        Solid axisZ = new AxisZ();
+        //Solid arrow = new Arrow();
+        renderer.render(axisX);
+        renderer.render(axisY);
+        renderer.render(axisZ);
+        //renderer.render(arrow);
 
         panel.repaint();
     }

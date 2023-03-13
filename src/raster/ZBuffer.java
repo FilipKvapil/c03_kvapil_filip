@@ -12,8 +12,8 @@ public class ZBuffer {
     }
     public void drawWithTest (int x, int y, double z, Col color){
         if (deathBuffer.getValue(x,y) > z){
-            imageBuffer.setValue(x,y,color);
             deathBuffer.setValue(x,y,z);
+            imageBuffer.setValue(x,y,color);
         }
     }
     public ImageBuffer getImageBuffer(){

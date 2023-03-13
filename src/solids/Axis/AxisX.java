@@ -9,8 +9,8 @@ import transforms.Point3D;
 import java.awt.*;
 
 public class AxisX extends Solid {
-
     public AxisX(){
+        //Vertex buffer
         getVertexBuffer().add(new Vertex(0,0,0,new Col(Color.RED.getRGB()))); //v0
         getVertexBuffer().add(new Vertex(1,0,0,new Col(Color.RED.getRGB()))); //v1
 

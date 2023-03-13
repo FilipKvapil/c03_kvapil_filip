@@ -12,6 +12,7 @@ import java.awt.*;
 public class AxisZ extends Solid {
 
     public AxisZ(){
+        //Vertex buffer
         getVertexBuffer().add(new Vertex(0,0,0,new Col(Color.BLUE.getRGB()))); //v0
         getVertexBuffer().add(new Vertex(0,0,1,new Col(Color.BLUE.getRGB()))); //v1
 

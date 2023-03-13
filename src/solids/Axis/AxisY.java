@@ -13,6 +13,7 @@ import java.awt.*;
 public class AxisY extends Solid {
 
     public AxisY(){
+        //Vertex buffer
         getVertexBuffer().add(new Vertex(0,0,0,new Col(Color.GREEN.getRGB()))); //v0
         getVertexBuffer().add(new Vertex(0,1,0,new Col(Color.GREEN.getRGB()))); //v1
 
