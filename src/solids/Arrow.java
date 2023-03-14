@@ -11,8 +11,8 @@ public class Arrow extends Solid {
         getVertexBuffer().add(new Vertex(0,0,0,new Col(255,255,0))); //v0
         getVertexBuffer().add(new Vertex(.8,0,0,new Col(255,255,0))); //v1
         getVertexBuffer().add(new Vertex(1.,0,0,new Col(0,0,255))); //v2
-        getVertexBuffer().add(new Vertex(0.8,0.2,0,new Col(0,0,255))); //v3
-        getVertexBuffer().add(new Vertex(0.8,-0.2,0,new Col(0,0,255))); //v4
+        getVertexBuffer().add(new Vertex(.8,.2,0,new Col(0,0,255))); //v3
+        getVertexBuffer().add(new Vertex(.8,-0.2,0,new Col(0,0,255))); //v4
 
         //Index buffer
         // LINE

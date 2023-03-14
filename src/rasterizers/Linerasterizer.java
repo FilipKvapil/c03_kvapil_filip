@@ -2,8 +2,6 @@ package rasterizers;
 
 import model.Vertex;
 import raster.ZBuffer;
-import transforms.Col;
-import transforms.Mat4;
 import transforms.Vec3D;
 
 import java.util.Arrays;
@@ -23,8 +21,20 @@ public class Linerasterizer implements Rasterizer{
         if (Arrays.asList(vertex).size()!=2)
             return;
 
-        Vertex v1 = vertexBuffer.get(0).dehomog().transformToScreen (zBuffer.getImageBuffer().getWidth(),zBuffer.getImageBuffer().getHeight());
-        Vertex v2 = vertexBuffer.get(1).dehomog().transformToScreen (zBuffer.getImageBuffer().getWidth(),zBuffer.getImageBuffer().getHeight());
+        Vertex va = vertexBuffer.get(0);
+        Vertex vb = vertexBuffer.get(1);
+        //ořezání
+        if (va == null || vb == null) {
+            return;
+        }
+        if (Math.min(va.getX(), vb.getX()) > 1.0 || Math.max(va.getX(), vb.getX()) < -1.0
+                || Math.min(va.getY(), vb.getY()) > 1.0 || Math.max(va.getY(), vb.getY()) < -1.0
+                || Math.min(va.getZ(), vb.getZ()) > 1.0 || Math.max(va.getZ(), vb.getZ()) < -1.0) {
+            return;
+        }
+        //Transformace do okna
+        Vertex v1 = va.transformToScreen(zBuffer.getImageBuffer().getWidth(), zBuffer.getImageBuffer().getHeight());
+        Vertex v2 = vb.transformToScreen(zBuffer.getImageBuffer().getWidth(), zBuffer.getImageBuffer().getHeight());
 
         Vec3D a = new Vec3D(v1.getPosition());
         Vec3D b = new Vec3D(v2.getPosition());
@@ -80,10 +90,12 @@ public class Linerasterizer implements Rasterizer{
             double k =  (double)(x2 - x1)/(y2 - y1);
 
             for (int y = y1; y <= y2; y++) {
-                // vykreslení
+                if (y > 0 && y < zBuffer.getImageBuffer().getWidth() - 1 && y < zBuffer.getImageBuffer().getHeight() - 1) {
+                    // vykreslení
                     double t3 = ((double) y - y1) / (y2 - y1);
                     double z3 = z2 * (1.0 - t3) + z1 * t3;
-                zBuffer.drawWithTest(x1,y,z3,v1.getColor());
+                    zBuffer.drawWithTest(x1, y, z3, v1.getColor());
+                }
                 x1 += k;
             }
         }

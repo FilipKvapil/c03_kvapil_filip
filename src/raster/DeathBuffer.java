@@ -37,7 +37,6 @@ public class DeathBuffer implements Raster<Double>{
 
     @Override
     public Double getValue(int x, int y) {
-
         return buffer[x][y] ;
     }
 

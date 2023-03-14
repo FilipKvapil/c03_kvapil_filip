@@ -3,15 +3,13 @@ package rasterizers;
 import model.Vertex;
 import raster.ZBuffer;
 import transforms.Col;
-import transforms.Mat4;
-import transforms.Mat4Identity;
-
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
 public class TriangleRasterizer implements Rasterizer{
     private final ZBuffer zBuffer;
-    private Boolean fillOrNot = true;
+    private final Boolean fillOrNot = true;
     private int color;
 
     public TriangleRasterizer(ZBuffer zBuffer) {
@@ -20,80 +18,92 @@ public class TriangleRasterizer implements Rasterizer{
 
     @Override
     public void rasterizer (Vertex... vertex){
+
         List<Vertex> vertexBuffer = Arrays.asList(vertex);
-        if (Arrays.asList(vertex).size()!=3)
+        if (vertexBuffer.size() != 3) {
             return;
+        }
 
         //Transformace do okna
-        Vertex at = vertexBuffer.get(0).transformToScreen (zBuffer.getImageBuffer().getWidth(),zBuffer.getImageBuffer().getHeight());
-        Vertex bt = vertexBuffer.get(1).transformToScreen (zBuffer.getImageBuffer().getWidth(),zBuffer.getImageBuffer().getHeight());
-        Vertex ct = vertexBuffer.get(2).transformToScreen (zBuffer.getImageBuffer().getWidth(),zBuffer.getImageBuffer().getHeight());
+        Vertex at = vertexBuffer.get(0).transformToScreen(zBuffer.getImageBuffer().getWidth(), zBuffer.getImageBuffer().getHeight());
+        Vertex bt = vertexBuffer.get(1).transformToScreen(zBuffer.getImageBuffer().getWidth(), zBuffer.getImageBuffer().getHeight());
+        Vertex ct = vertexBuffer.get(2).transformToScreen(zBuffer.getImageBuffer().getWidth(), zBuffer.getImageBuffer().getHeight());
 
-        if (at.getY()>bt.getY()){
-            Vertex help = bt;
-            bt = at;
-            at = help;
-        }
-        if (bt.getY()>ct.getY()){
-            Vertex help = ct;
-            ct=bt;
-            bt=help;
-        }
-        if (at.getY()>bt.getY()){
-            Vertex help =bt;
-            bt=at;
-            at=help;
-        }
-
-        for (int y = (int)at.getY(); y<= bt.getY(); y++){
-            double t1 = (y-at.getY())/(bt.getY()-at.getY());
-            int x1 = (int) ((1-t1)*at.getX()+t1*bt.getX());
-            int z1 = (int) ((1-t1)*at.getZ()+t1*bt.getZ());
-
-            double t2 = (y-at.getY())/(ct.getY()-at.getY());
-            int x2 = (int) ((1-t2)*at.getX()+t2*ct.getX());
-            int z2 = (int) ((1-t2)*at.getZ()+t2*ct.getZ());
-            
-            if (x1 > x2) {
-                int help = x1;
-                x1 = x2;
-                x2 = help;
-                help = z1;
-                z1 = z2;
-                z2 = help;
+        if(fillOrNot) {
+            if (at.getY() > bt.getY()) {
+                Vertex help = at;
+                at = bt;
+                bt = help;
+            }
+            if (bt.getY() > ct.getY()) {
+                Vertex help = bt;
+                bt = ct;
+                ct = help;
+            }
+            if (at.getY() > bt.getY()) {
+                Vertex help = at;
+                at = ct;
+                ct = help;
             }
 
-            for (int x = x1; x < x2; x++) {
-                double t3 = ((double) x - x1) / (x2 - x1);
-                double z3 = z1 * (1.0 - t3) + z2 * t3;
-                zBuffer.drawWithTest(x,y,z3,new Col(0xffff00));
+            for (int y = Math.max((int) at.getY() + 1, 0); y <= Math.min((int) bt.getY(), zBuffer.getImageBuffer().getHeight() - 1); y++) {
+                double t = ((double) y - at.getY()) / (bt.getY() - at.getY());
+                double x1 = at.getX() * (1.0 - t) + bt.getX() * t;
+                double z1 = at.getZ() * (1.0 - t) + bt.getZ() * t;
+
+                double t2 = ((double) y - at.getY()) / (ct.getY() - at.getY());
+                double x2 = at.getX() * (1.0 - t2) + ct.getX() * t2;
+                double z2 = at.getZ() * (1.0 - t2) + ct.getZ() * t2;
+
+                if (x1 > x2) {
+                    double help = x1;
+                    x1 = x2;
+                    x2 = help;
+                    help = z1;
+                    z1 = z2;
+                    z2 = help;
+                }
+
+                for (int x = Math.max((int) x1 + 1, 0); x <= Math.min(x2, zBuffer.getImageBuffer().getWidth() - 1); x++) {
+                    double t3 = ((double) x - x1) / (x2 - x1);
+                    double z3 = z1 * (1.0 - t3) + z2 * t3;
+                    zBuffer.drawWithTest(x, y, z3, at.getColor());
+                }
             }
-        }
 
-        for (int y = (int)bt.getY(); y<= ct.getY(); y++){
-            double t1 = (y-bt.getY())/(ct.getY()-bt.getY());
-            int x1 = (int) ((1-t1)*bt.getX()+t1*ct.getX());
-            int z1 = (int) ((1-t1)*at.getZ()+t1*bt.getZ());
+            for (int y = Math.max((int) bt.getY() + 1, 0); y <= Math.min(ct.getY(), zBuffer.getImageBuffer().getHeight() - 1); y++) {
+                double t = ((double) y - bt.getY()) / (ct.getY() - bt.getY());
+                double x1 = bt.getX() * (1.0 - t) + ct.getX() * t;
+                double z1 = bt.getZ() * (1.0 - t) + ct.getZ() * t;
 
-            double t2 = (y-at.getY())/(ct.getY()-at.getY());
-            int x2 = (int) ((1-t2)*at.getX()+t2*ct.getX());
-            int z2 = (int) ((1-t2)*at.getZ()+t2*ct.getZ());
+                double t2 = ((double) y - at.getY()) / (ct.getY() - at.getY());
+                double x2 = at.getX() * (1.0 - t2) + ct.getX() * t2;
+                double z2 = at.getZ() * (1.0 - t2) + ct.getZ() * t2;
 
-            if (x1 > x2) {
-                int help = x1;
-                x1 = x2;
-                x2 = help;
-                help = z1;
-                z1 = z2;
-                z2 = help;
+                if (x1 > x2) {
+                    double help = x1;
+                    x1 = x2;
+                    x2 = help;
+                    help = z1;
+                    z1 = z2;
+                    z2 = help;
+                }
+
+                for (int x = Math.max((int) x1 + 1, 0); x <= Math.min(x2, zBuffer.getImageBuffer().getWidth() - 1); x++) {
+                    double t3 = ((double) x - x1) / (x2 - x1);
+                    double z3 = z1 * (1.0 - t3) + z2 * t3;
+                    zBuffer.drawWithTest(x, y, z3, at.getColor());
+                }
             }
+        }else{
+            Graphics graphics = zBuffer.getImageBuffer().getGraphics();
+            graphics.setColor(new Color(Color.BLACK.getRGB()));
 
-            for (int x = x1; x < x2; x++) {
-                double t3 = ((double) x - x1) / (x2 - x1);
-                double z3 = z1 * (1.0 - t3) + z2 * t3;
+            graphics.drawLine((int)at.getX(),(int)at.getY(),(int)bt.getX(),(int)bt.getY());
 
-                zBuffer.drawWithTest(x,y,z3,new Col(0xffff00));
-            }
+            graphics.drawLine((int)bt.getX(),(int)bt.getY(),(int)ct.getX(),(int)ct.getY());
+
+            graphics.drawLine((int)ct.getX(),(int)ct.getY(),(int)at.getX(),(int)at.getY());
         }
     }
     public Boolean getFillOrNot() {

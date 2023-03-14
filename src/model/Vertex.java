@@ -44,11 +44,13 @@ public class Vertex implements Vectorizable<Vertex>{
     }
     @Override
     public Vertex mul(double k) {
-        return new Vertex(position.mul(k),color);
+        Col col = color.mul(k);
+        return new Vertex(position.mul(k),col);
     }
     @Override
     public Vertex add(Vertex vertex) {
-        return new Vertex(vertex.position.add(position),color);
+        Col col = color.add(vertex.getColor());
+        return new Vertex(vertex.position.add(position),col);
     }
     public double getOne() {
         return one;

@@ -1,5 +1,7 @@
 package raster;
 
+import model.Vertex;
+
 public interface Raster<E> {
 
     void clear();

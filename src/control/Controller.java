@@ -1,5 +1,7 @@
 package control;
 
+import view.Panel;
+
 public interface Controller {
-    void initListeners();
+    void initListeners(Panel panel);
 }

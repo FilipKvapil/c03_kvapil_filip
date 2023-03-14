@@ -11,6 +11,7 @@ public class ImageBuffer implements Raster<Col> {
 
     public ImageBuffer(int width, int height) {
         img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        color = new Col(Color.BLACK.getRGB());
     }
 
     public void repaint(Graphics graphics) {

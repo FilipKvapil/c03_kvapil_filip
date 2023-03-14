@@ -11,7 +11,7 @@ public class ZBuffer {
         this.deathBuffer = new DeathBuffer(imageBuffer.getWidth(), imageBuffer.getHeight());
     }
     public void drawWithTest (int x, int y, double z, Col color){
-        if (deathBuffer.getValue(x,y) > z){
+        if (deathBuffer.getValue(x,y) > z && z >= 0.0){
             deathBuffer.setValue(x,y,z);
             imageBuffer.setValue(x,y,color);
         }

@@ -1,5 +1,16 @@
-/*package control;
+package control;
 
+import raster.ImageBuffer;
+import raster.ZBuffer;
+import rasterizers.Linerasterizer;
+import rasterizers.TriangleRasterizer;
+import renderer.Renderer;
+import solids.Arrow;
+import solids.Axis.AxisX;
+import solids.Axis.AxisY;
+import solids.Axis.AxisZ;
+import solids.Cube;
+import solids.Pyramid;
 import transforms.*;
 import view.Panel;
 
@@ -8,28 +19,25 @@ import java.awt.event.*;
 public class Controller3D implements Controller {
 
     private final Panel panel;
+    private final ZBuffer zBuffer;
+    private final TriangleRasterizer triangleRasterizer;
+    private final Linerasterizer linerasterizer;
+    private Renderer renderer;
 
-    private WireRenderer wireRenderer;
-
-    //Objekty
-    private final Cube cube = new Cube();
-    private final Hexahonal hexahonal = new Hexahonal();
-    private final Pyramid pyramid = new Pyramid();
-    //Křivky
-    private final CurveFerg curveFerg = new CurveFerg();
-    private final CurveBezi curveBezi = new CurveBezi();
-    private final CurveCoon curveCoon = new CurveCoon();
     //Axis
     private final AxisX axisX = new AxisX();
     private final AxisY axisY = new AxisY();
     private final AxisZ axisZ = new AxisZ();
 
+    private final Pyramid pyramid = new Pyramid();
+    private final Cube cube = new Cube();
+
     private int mouseX;
     private int mouseY;
     private int mouseButton;
 
-    private int object;
-    private int krivka;
+    private boolean blCube = false;
+    private boolean blPyramid = false;
     private int trans;
 
     //model = jednotková matice
@@ -71,24 +79,29 @@ public class Controller3D implements Controller {
     //Konstruktor
     public Controller3D(Panel panel) {
         this.panel = panel;
+        this.zBuffer = new ZBuffer(panel.getRaster());
+        this.triangleRasterizer = new TriangleRasterizer(zBuffer);
+        this.linerasterizer = new Linerasterizer(zBuffer);
+
         //Listener na tlačítka a boxy
         ActionListener listener = e -> {
             Object source = e.getSource();
-            if (source == panel.getCBKrivka()) {
-                krivka = panel.getCBKrivka().getSelectedIndex();
+
+            if (source == panel.getCBKrychle()) {
+                blCube = !blCube;
+            }else if(source == panel.getCBJehlan()){
+                blPyramid = !blPyramid;
             } else if (source == panel.getCBKamera()) {
                 if (panel.getCBKamera().getSelectedIndex() == 0) {
-                    wireRenderer.setProj(projPers);
+                    renderer.setProj(projPers);
                     position = new Vec3D(-3, 1, 1);
                 } else if (panel.getCBKamera().getSelectedIndex() == 1) {
-                    wireRenderer.setProj(projOrtho);
+                    renderer.setProj(projOrtho);
                     position = new Vec3D(-.1, -.2, 0);
                 }
                 cameraSetPosition();
             } else if (source == panel.getCBTrans()) {
                 trans = panel.getCBTrans().getSelectedIndex();
-            } else if (source == panel.getCBObjekt()) {
-                object = panel.getCBObjekt().getSelectedIndex();
             } else if (source == panel.getJBReset()) {
                 position = new Vec3D(-3, 1, 1);
                 azimuth = Math.toRadians(0);
@@ -99,9 +112,9 @@ public class Controller3D implements Controller {
             panel.grabFocus();
         };
 
+        panel.getCBKrychle().addActionListener(listener);
+        panel.getCBJehlan().addActionListener(listener);
         panel.getCBKamera().addActionListener(listener);
-        panel.getCBKrivka().addActionListener(listener);
-        panel.getCBObjekt().addActionListener(listener);
         panel.getCBTrans().addActionListener(listener);
         panel.getJBReset().addActionListener(listener);
         initObjects(panel.getRaster());
@@ -110,16 +123,15 @@ public class Controller3D implements Controller {
     }
 
     //inicializace objektů
-    public void initObjects(Raster raster) {
-        krivka = panel.getCBKrivka().getSelectedIndex();
-        object = panel.getCBObjekt().getSelectedIndex();
+    public void initObjects(ImageBuffer raster) {
         trans = panel.getCBTrans().getSelectedIndex();
 
-        LineRasterizerGraphics lineRasterizer = new LineRasterizerGraphics(raster);
+
         projOrtho = new Mat4OrthoRH(5, 5, 0.1f, 200f);
         projPers = new Mat4PerspRH(Math.toRadians(60), raster.getHeight() / (float) raster.getWidth(), 0.1f, 200f);
-        wireRenderer = new WireRenderer(raster, lineRasterizer, projPers, camera.getViewMatrix());
+        renderer = new Renderer(triangleRasterizer, linerasterizer, projPers, camera.getViewMatrix());
     }
+
 
     @Override
     public void initListeners(Panel panel) {
@@ -138,17 +150,17 @@ public class Controller3D implements Controller {
             public void mouseDragged(MouseEvent e) {
 
                 if (panel.isKameraPohyb() && mouseButton == MouseEvent.BUTTON1) {
-                    if (e.getX() > mouseX && azimuth > -Math.toRadians(90)) {
+                    if (e.getX() > mouseX) {
                         azimuth -= Math.toRadians(.5);
                         cameraSetPosition();
-                    } else if (e.getX() < mouseX && azimuth < Math.toRadians(90)) {
+                    } else if (e.getX() < mouseX ) {
                         azimuth += Math.toRadians(.5);
                         cameraSetPosition();
                     }
-                    if (e.getY() > mouseY && zenith > -Math.toRadians(90)) {
+                    if (e.getY() > mouseY) {
                         zenith -= Math.toRadians(.5);
                         cameraSetPosition();
-                    } else if (e.getY() < mouseY && zenith < Math.toRadians(90)) {
+                    } else if (e.getY() < mouseY) {
                         zenith += Math.toRadians(.5);
                         cameraSetPosition();
                     }
@@ -252,121 +264,23 @@ public class Controller3D implements Controller {
 
     private void displey() {
         panel.clear();
-        switch (object) {
-            case 0 -> {
-                cube.setModel(model);
-                wireRenderer.render(cube);
-            }
-            case 1 -> {
-                pyramid.setModel(model);
-                wireRenderer.render(pyramid);
-            }
-            case 2 -> {
-                hexahonal.setModel(model);
-                wireRenderer.render(hexahonal);
-            }
-        }
-        switch (krivka) {
-            case 0:
-                curveFerg.setModel(model);
-                wireRenderer.render(curveFerg);
-                break;
-            case 1:
-                curveBezi.setModel(model);
-                wireRenderer.render(curveBezi);
-                break;
-            case 2:
-                curveCoon.setModel(model);
-                wireRenderer.render(curveCoon);
-                break;
-        }
 
-
-        wireRenderer.render(axisX, axisY, axisZ);
+        if(blPyramid && blCube){
+            renderer.render(cube,pyramid);
+        }else if(blCube){
+            renderer.render(cube);
+        }else if(blPyramid){
+            renderer.render(pyramid);
+        }
+        renderer.render(axisX, axisY, axisZ);
         panel.repaint();
     }
 
     private void cameraSetPosition() {
         camera = new Camera(camera, position);
         camera = new Camera(camera, azimuth, zenith);
-        wireRenderer.setView(camera.getViewMatrix());
+
+        renderer.setView(camera.getViewMatrix());
         displey();
     }
-
-}*/
-
-
-package control;
-
-import rasterizers.Linerasterizer;
-import rasterizers.TriangleRasterizer;
-import shaders.Shader;
-import solids.Arrow;
-import solids.Axis.AxisX;
-import solids.Axis.AxisY;
-import solids.Axis.AxisZ;
-import solids.Solid;
-import raster.ImageBuffer;
-import raster.ZBuffer;
-import renderer.Renderer;
-import transforms.Col;
-import view.Panel;
-
-import java.awt.event.*;
-
-public class Controller3D implements Controller {
-    private final Panel panel;
-    private final ZBuffer zBuffer;
-    private final TriangleRasterizer triangleRasterizer;
-    private final Linerasterizer linerasterizer;
-    private final Renderer renderer;
-
-    public Controller3D(Panel panel) {
-        this.panel = panel;
-        this.zBuffer = new ZBuffer(panel.getRaster());
-        this.triangleRasterizer = new TriangleRasterizer(zBuffer);
-        this.linerasterizer = new Linerasterizer(zBuffer);
-
-        Col color = new Col(0xff0000);
-
-        Shader greenShader = v -> {
-            return new Col(0x00ff00);
-        };
-
-        this.renderer = new Renderer(triangleRasterizer,linerasterizer);
-        initObjects(panel.getRaster());
-        initListeners();
-        redraw();
-    }
-
-    public void initObjects(ImageBuffer raster) {
-        raster.setClearValue(new Col(0x101010));
-
-    }
-
-    private void redraw() {
-        panel.clear();
-        Solid axisX = new AxisX();
-        Solid axisY = new AxisY();
-        Solid axisZ = new AxisZ();
-        //Solid arrow = new Arrow();
-        renderer.render(axisX);
-        renderer.render(axisY);
-        renderer.render(axisZ);
-        //renderer.render(arrow);
-
-        panel.repaint();
-    }
-
-    @Override
-    public void initListeners() {
-        panel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                panel.resize();
-                initObjects(panel.getRaster());
-            }
-        });
-    }
 }
-

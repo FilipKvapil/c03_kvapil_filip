@@ -1,12 +1,13 @@
 package solids;
 
+import transforms.Bicubic;
+
 public class PatchWire extends Solid {
 
     public PatchWire() {
         //TODO: řídící body
 
-        //TODO: instance
-        // Bicubic bicubic = new Bicubic();
+        //Bicubic bicubic = new Bicubic();
 
         for (int i = 1; i <= 100; i++) {
             double t = 1 / 100.;
